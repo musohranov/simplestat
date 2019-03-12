@@ -1,0 +1,89 @@
+<html>
+<head>
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+  <script type="text/javascript">
+
+google.load('visualization', 'current', {packages: ['controls']});
+google.setOnLoadCallback(drawChart);
+
+function drawChart () {
+    var jsonData = $.ajax({
+        url: "./{{task_id}}_data",
+        dataType: "json",
+        async: false
+    }).responseText;
+
+    var chartData = new google.visualization.DataTable();
+
+    chartData.addColumn('datetime', 'Время');
+
+    {% for column in column_list %}
+    chartData.addColumn('number', '{{column}}');
+    {% endfor %}
+
+    chartData.addRows([
+      {% for row in row_list %} [{{row|safe}}], {% endfor %}
+    ]);
+
+    var chart = new google.visualization.ChartWrapper({
+        chartType: 'AnnotationChart',
+        containerId: 'chart',
+        dataTable: chartData,
+        options: {
+            width: 1024,
+            height: 768,
+            displayAnnotations: true,
+        }
+    });
+
+    var filterData = new google.visualization.DataTable();
+    filterData.addColumn('number', 'colIndex');
+    filterData.addColumn('string', 'colLabel');
+    for (var i = 1; i < chartData.getNumberOfColumns(); i++) {
+        filterData.addRow([i, chartData.getColumnLabel(i)]);
+    }
+
+    var filter = new google.visualization.ControlWrapper({
+        controlType: 'CategoryFilter',
+        containerId: 'column_filter',
+        dataTable: filterData,
+        options: {
+            filterColumnLabel: 'colLabel',
+            ui: {
+                label: 'Колонки',
+                allowTyping: false,
+                allowMultiple: true,
+                allowNone: false,
+                selectedValuesLayout: 'belowStacked'
+            }
+        },
+        state: {selectedValues: [chartData.getColumnLabel(1)]}
+    });
+
+    function setChartView () {
+        var columns = [0];
+
+        filter.getState().selectedValues.forEach(function(selectedValue) {
+            var row = filterData.getFilteredRows([{column: 1, value: selectedValue}])[0];
+            columns.push(filterData.getValue(row, 0));
+        });
+
+        chart.setView({
+            columns: columns
+        });
+        chart.draw();
+    }
+
+    setChartView();
+
+    filter.draw();
+    google.visualization.events.addListener(filter, 'statechange', setChartView);
+}
+  </script>
+</head>
+<body>
+<div id="column_filter"></div>
+<div id="chart"></div>
+</body>
+</html>

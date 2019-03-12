@@ -1,0 +1,28 @@
+{
+  "random": {
+    "name": "Случайные числа",
+    "data source": {
+      "driver": "python",
+      "script": "e:\\!SimpleStat\\test_random.py",
+      "values": {
+        "v1": "int",
+        "v2": "int"
+      },
+      "time interval": 60
+    }
+  },
+  "crypto_currency": {
+    "name": "Курс крипто-валют",
+    "data source": {
+      "driver": "python",
+      "script": "e:\\!SimpleStat\\test_crypto_currency.py",
+      "values": {
+        "bitcoin": "float",
+        "ethereum": "float",
+        "monero": "float",
+        "bitcoin_cash": "float"
+      },
+      "time interval": 60
+    }
+  }
+}
