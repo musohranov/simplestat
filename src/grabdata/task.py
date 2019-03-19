@@ -7,10 +7,12 @@
 """
 
 import logging
-
 from abc import ABC, abstractmethod
 from threading import Thread
 from time import sleep
+
+import psycopg2
+from psycopg2.extras import DictCursor
 
 from result_storage import ResultStorage
 
@@ -60,6 +62,9 @@ class GrabDataTask(ABC, Thread):
         if PythonGrabDataTask.check(cfg.data_source):
             return PythonGrabDataTask(cfg)
 
+        if PostgresqlGrabDataTask.check(cfg.data_source):
+            return PostgresqlGrabDataTask(cfg)
+
         raise Exception('Не поддерживамый тип конфигурации: {}'.format(cfg))
 
 
@@ -80,7 +85,7 @@ class PythonGrabDataTask(GrabDataTask):
 
     def __init__(self, cfg):
         """
-        :param cfg:
+        :param TaskConfig cfg: Конфигурация.
         """
         super().__init__(cfg)
 
@@ -92,3 +97,32 @@ class PythonGrabDataTask(GrabDataTask):
     def _iteration(self):
         exec(self._script)
         return eval('grab_data()')
+
+
+class PostgresqlGrabDataTask(GrabDataTask):
+    """
+    Задача сбора данных, где в качестве источника данных используется СУБД Postgresql.
+    """
+
+    @staticmethod
+    def check(data_source_cfg):
+        """
+        Является ли исходные данные текущего типа 'postgresql'.
+        :param TaskDataSourceConfig data_source_cfg: Конфигурация исходных данных.
+        :rtype: bool
+        """
+
+        return data_source_cfg.driver.split(';')[0] == 'postgresql'
+
+    def __init__(self, cfg):
+        """
+        :param TaskConfig cfg: Конфигурация.
+        """
+        super().__init__(cfg)
+
+        self._db_connect = psycopg2.connect(cfg.data_source.driver.split(';')[1])
+        self._db_cursor = self._db_connect.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    def _iteration(self):
+        self._db_cursor.execute(self._cfg.data_source.script)
+        return dict(self._db_cursor.fetchone())
