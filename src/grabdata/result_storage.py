@@ -23,7 +23,6 @@ class ResultStorage:
         :param dict values: Значения. Ключом является имя поля, значением тип.
         """
 
-        self._field_names = tuple(values.keys())
         self._cache_list = []
 
         #
@@ -54,10 +53,10 @@ class ResultStorage:
     def save(self, data):
         """
         Сохранить данные.
-        :param tuple data: Данные.
+        :param dict data: Данные.
         """
 
-        values = dict(zip(self._field_names, data))
+        values = data.copy()
         values['timestamp'] = datetime.now()
 
         self._cache_list.append(values)

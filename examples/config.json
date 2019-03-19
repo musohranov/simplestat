@@ -3,7 +3,7 @@
     "name": "Случайные числа",
     "data source": {
       "driver": "python",
-      "script": "e:\\!SimpleStat\\test_random.py",
+      "script": "e:\\!SimpleStat\\examples\\test_random.py",
       "values": {
         "v1": "int",
         "v2": "int"
@@ -15,14 +15,23 @@
     "name": "Курс крипто-валют",
     "data source": {
       "driver": "python",
-      "script": "e:\\!SimpleStat\\test_crypto_currency.py",
+      "script": "e:\\!SimpleStat\\examples\\test_crypto_currency.py",
       "values": {
-        "bitcoin": "float",
-        "ethereum": "float",
-        "monero": "float",
-        "bitcoin_cash": "float"
+        "Bitcoin": "float",
+        "Ethereum": "float",
+        "Monero": "float",
+        "BitcoinCash": "float",
+        "BitcoinGold": "float",
+        "CARDANO": "float",
+        "DASH": "float",
+        "EOS": "float",
+        "IOTA": "float",
+        "NEM": "float",
+        "NEO": "float",
+        "OmiseGo": "float",
+        "Ripple": "float"
       },
-      "time interval": 60
+      "time interval": 10
     }
   }
 }

@@ -1,3 +1,6 @@
 def grab_data():
     from random import random
-    return random() * 100, random() * 100
+    return {
+        'v1': random() * 100,
+        'v2': random() * 100
+    }
