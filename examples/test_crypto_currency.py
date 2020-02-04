@@ -1,5 +1,13 @@
-def grab_data():
+def grab_data() -> dict:
+    """
+    Следим за курсами (в долларах США) крипто-валют
+    """
+
     class CryptoCurrency:
+        """
+        Курс крипто-валюты с сайта fxclub.org
+        """
+
         CurrencyList = {
             'Bitcoin': 'Bitcoin',
             'Ethereum': 'ETHUSD',
@@ -15,11 +23,22 @@ def grab_data():
             'OmiseGo': 'OMGUSD',
             'Ripple': 'XRPUSD'
         }
+        """
+        Перечень кодов крипто-валют
+        """
 
         GetUsdUrl = 'https://gaterest.fxclub.org/real/restapi/quotes/historyquotes?symbol={}&interval=m1'
+        """
+        Url для get запроса получения курса
+        """
 
         @classmethod
-        def get_usd(cls, currency):
+        def get_usd(cls, currency: str) -> float:
+            """
+            Получить курс (в долларах США)
+            :param currency: Код крипто-валюты
+            """
+
             import urllib.request
             import json
 
@@ -28,5 +47,3 @@ def grab_data():
                 return result['Result']['RateHistory'][-1]['c']
 
     return {curr: CryptoCurrency.get_usd(code) for curr, code in CryptoCurrency.CurrencyList.items()}
-
-

@@ -31,7 +31,7 @@
         "OmiseGo": "float",
         "Ripple": "float"
       },
-      "time interval": 10
+      "time interval": 30
     }
   }
 }
