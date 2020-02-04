@@ -2,8 +2,7 @@
 Задача сбора данных.
 
 Класс GrabDataTask является абстрактным и содержит базовый интерфейс задачи сбора статистики.
-Классы наследники реализуют сбора данных из различных (python, postgresql, ...)
-типов источников данных.
+Классы наследники реализуют сбора данных из различных типов (python, postgresql, ...) источников данных.
 """
 
 import logging
@@ -14,17 +13,18 @@ from time import sleep
 import psycopg2
 from psycopg2.extras import DictCursor
 
+from config import TaskConfig, TaskDataSourceConfig
 from result_storage import ResultStorage
 
 
 class GrabDataTask(ABC, Thread):
     """
-    Задача сбора данных.
+    Задача сбора данных
     """
 
-    def __init__(self, cfg):
+    def __init__(self, cfg: TaskConfig):
         """
-        :param TaskConfig cfg: Конфигурация.
+        :param cfg: Конфигурация
         """
 
         super().__init__()
@@ -34,7 +34,7 @@ class GrabDataTask(ABC, Thread):
 
     def run(self):
         """
-        Выполнить задачу.
+        Выполнить задачу
         """
 
         while True:
@@ -48,15 +48,16 @@ class GrabDataTask(ABC, Thread):
     @abstractmethod
     def _iteration(self):
         """
-        Итерация сбора данных.
+        Выполнить итерацию сбора данных
         """
 
     @staticmethod
-    def create_instance(cfg):
+    def create_instance(cfg: TaskConfig) -> 'GrabDataTask':
         """
-        Создать экземпляр класса задачи сбора данных.
-        :param TaskConfig cfg: Конфигурация.
-        :rtype: GrabDataTask
+        Создать экземпляр класса задачи сбора данных
+        :param cfg: Конфигурация
+        :raise: Exception
+        :return: Экзепляр класса, при неудаче исключение
         """
 
         if PythonGrabDataTask.check(cfg.data_source):
@@ -74,11 +75,10 @@ class PythonGrabDataTask(GrabDataTask):
     """
 
     @staticmethod
-    def check(data_source_cfg):
+    def check(data_source_cfg: TaskDataSourceConfig) -> bool:
         """
         Является ли исходные данные текущего типа 'python'.
-        :param TaskDataSourceConfig data_source_cfg: Конфигурация исходных данных.
-        :rtype: bool
+        :param data_source_cfg: Конфигурация исходных данных.
         """
 
         return data_source_cfg.driver == 'python'
@@ -94,7 +94,10 @@ class PythonGrabDataTask(GrabDataTask):
 
         self._script = compile(script_text, cfg.data_source.script, 'exec')
 
-    def _iteration(self):
+    def _iteration(self) -> dict:
+        """
+        Выполнить итерацию сбора данных
+        """
         exec(self._script)
         return eval('grab_data()')
 
@@ -105,11 +108,10 @@ class PostgresqlGrabDataTask(GrabDataTask):
     """
 
     @staticmethod
-    def check(data_source_cfg):
+    def check(data_source_cfg: TaskDataSourceConfig) -> bool:
         """
         Является ли исходные данные текущего типа 'postgresql'.
-        :param TaskDataSourceConfig data_source_cfg: Конфигурация исходных данных.
-        :rtype: bool
+        :param data_source_cfg: Конфигурация исходных данных.
         """
 
         return data_source_cfg.driver.split(';')[0] == 'postgresql'
@@ -123,6 +125,9 @@ class PostgresqlGrabDataTask(GrabDataTask):
         self._db_connect = psycopg2.connect(cfg.data_source.driver.split(';')[1])
         self._db_cursor = self._db_connect.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-    def _iteration(self):
+    def _iteration(self) -> dict:
+        """
+        Выполнить итерацию сбора данных
+        """
         self._db_cursor.execute(self._cfg.data_source.script)
         return dict(self._db_cursor.fetchone())

@@ -9,7 +9,7 @@ google.setOnLoadCallback(drawChart);
 
 function drawChart () {
     var jsonData = $.ajax({
-        url: "./{{task_id}}_data",
+        url: "./{{task_id}}",
         dataType: "json",
         async: false
     }).responseText;

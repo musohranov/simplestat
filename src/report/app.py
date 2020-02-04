@@ -1,6 +1,10 @@
 """
 Вебсервер статистики.
 В качестве параметра необходимо передать путь до sqlite файла с данными.
+
+Реализованы две страницы:
+ - Список задач по которым представлена статистика (страница по умолчанию)
+ - Стастистика задачи в виде google charts
 """
 
 import sys
@@ -14,18 +18,29 @@ app = Flask(__name__,
 app.config.from_object(__name__)
 
 
-@app.route("/")
-@app.route("/tasks")
+@app.route('/')
+@app.route('/tasks')
 def _tasks():
+    """
+    Страница со списком задач. Список задач представлен одноименными таблицами с данными, сформированными
+    на этапе сбора данных
+    """
     task_list = _get_db().get_tables()
     return render_template('tasks.html', **locals())
 
 
-@app.route("/tasks/<task_id>")
-def _task(task_id):
+@app.route('/tasks/<task_id>')
+def _task(task_id: str):
+    """
+    Страница статисти по задаче (в виде google charts)
+    :param task_id: Идентификатор задачи
+    """
     cursor = _get_db().execute_sql('''SELECT * FROM "{}"'''.format(task_id))
 
+    # Сформировать перечень колонок со значениями, исключая pk timestamp, она будет добавлена безусловно в шаблоне
     column_list = [c[0] for c in cursor.description if c[0] not in 'timestamp']
+
+    # Сформировать массив значений в строковом исполнении
     row_list = []
     for row in cursor.fetchall():
         row_str = tuple(map(str, row))
@@ -34,10 +49,9 @@ def _task(task_id):
     return render_template('task.html', **locals())
 
 
-def _get_db():
+def _get_db() -> peewee.SqliteDatabase:
     """
-    Получить БД.
-    :rtype: SqliteDatabase
+    Получить БД
     """
 
     if not hasattr(g, 'db'):
@@ -54,10 +68,11 @@ def _get_db():
     return g.db
 
 
-def _close_db(e):
+def _close_db(_):
     """
-    Закрыть соединение с БД.
+    Закрыть соединение с БД
     """
+
     _db = g.pop('db', None)
     if _db is not None:
         _db.close()
@@ -65,7 +80,7 @@ def _close_db(e):
 
 def run():
     """
-    Запустить сервер.
+    Запустить сервер
     """
 
     app.config.from_mapping(
